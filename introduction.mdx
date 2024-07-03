@@ -1,71 +1,27 @@
 ---
 title: Introduction
-description: 'Welcome to the home of your new documentation'
+description: 'Welcome to Byne! With us, you can build state-of-the-art LLM applications on our platform and then migrate your environment on-premise or into a private cloud.'
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.svg"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.svg"
-  alt="Hero Dark"
-/>
+## Platform
 
-## Setting up
+Is your company primarily operating on-premise or private cloud infrastructure? 
+Byne provides a fully-managed service for you to develop RAG and Agents applications. The platform handles everything, from spinning up
+a vector DB and ingesting documents to processing function calls from Agents. We estimate that about 65-85% of most popular use cases (knowledge management apps, document processing)
+can be implemented in under 50 lines of code using Byne. And most importantly, applications developed on this platform are entirely vendor-agnostic. 
+You can migrate the completed app into your private cloud, to a preferred IaaS provider, or even on-premise. Apps built with Byne don't rely on external services and can be deployed on any infrastructure.
 
-The first step to world-class documentation is setting up your editing environments.
+## Get started
 
-<CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
+We provide a UI (that's also migratable) for you to experiment with different setups. There, you can also create a key to start using the API.
+To create an API key, navigate to the "Sign Up" page and register with the service. Your personal profile is accessible by clicking the "My profile" button.
+Once inside your profile, click the "For Developers" tab to navigate to the developer panel.
+![For Developers](/images/Guide1.png)
+In the "For Developers" panel, you may create an API key to use our services. Save it since the API key can only be viewed once for security reasons!
+![API Key](/images/Guide2.png)
+Once you have the API key, you may authorize your requests by simply adding an HTTP Header "X-API-Key" with your key to each request. Please refer to the "API Reference" section to learn more about the available tools.
 
-## Make it yours
+## Pricing
 
-Update your docs to your brand and add valuable content for the best user conversion.
+We don't make money from the cloud playground so we only recharge the costs by using API credits. One API unit costs 1c (0.01\$). We charge 3 units (0.03\$) per call to parse a document (per document in a triggered Job) and 2 units (0.02\$) per generation (/ask endpoint call).
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
-  </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/components/accordion"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
-  </Card>
-</CardGroup>

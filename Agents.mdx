@@ -1,0 +1,112 @@
+---
+title: 'Agents'
+description: 'Use Agents to enable an LLM to use tools'
+---
+
+## What's in this guide
+
+In this guide, we will go through a slightly more advanced use case, building an Agent application with function-calling.
+Function calling is a very useful capability in many latest-gen LLMs, allowing the model to pick what kind of tools it needs to deliver a particular result and then leverage these tools. 
+
+We also support prompt-enforced function calls for older models, but you may need to speak with our migration team about implementing this functionality. 
+
+Here, we will build a simple Agent that's capable of going to Wikipedia to retrieve relevant data for producing an answer. Our Agents come in two forms: the restricted Google Agent
+and a free-form API Caller. With Google Agent, you can enable the LLM to do Google Search, and the free-form enables requests to arbitrary APIs.
+
+### Define the execution layer
+An execution layer is likely the most important part of an Agent. It specifies the schema for the function call, intercepts it, and executes it.
+We will create a Google execution layer restricted to Wikipedia:
+
+```python main.py
+import requests
+
+KEY = 'YOUR_BYNE_KEY'
+headers = {
+    'X-API-Key': KEY
+}
+
+exec_layer = {
+  "name": "WikiSearch", # Name of the layer
+  "description": "Find data from Wikipedia.",
+  "sourceFabric": {
+    "config": {"siteFilter":['wikipedia.org']}, # Choose the scope
+    "name": "googleSearch" # Pick the right constructor for the execution layer
+  }
+}
+
+exec_layer_obj = requests.post('https://app.docs.bynesoft.com/api/users/agents/execution-layers', json=exec_layer, headers=headers).json()
+exec_layer_id = exec_layer_obj['id']
+```
+
+### Create a template
+Templates (also called system commands or system prompts) guide the general behavior of the model. They are particularly
+important for Agents as they provide the context explaining when to execute the function call.
+
+```python main.py
+template = {
+  "template": "You should help users find information. You may call a function to get Wikipedia data. Always use it to make sure you provide relevant advice.",
+  "name": "WikiAssistant",
+  "type": "llm"
+}
+
+template_obj = requests.post('https://app.docs.bynesoft.com/api/ask/templates', json=template, headers=headers).json()
+template_id = template_obj['id']
+```
+
+### Build an Agent
+Now, having created a Template and an Execution Layer, we can combine them to create an Agent.
+
+```python main.py
+agent = {
+  "name": "WikiAssistant",
+  "description": "An Agent that can search Wiki.",
+  "templateId": template_id,
+  "exeLayers": [
+    exec_layer_id
+  ],
+  "modelType": "GPT-4o"
+}
+
+
+agent_obj = requests.post('https://app.docs.bynesoft.com/api/users/agents', json=agent, headers=headers).json()
+agent_id = agent_obj['id']
+```
+
+### Generate!
+
+Agents have their own generative endpoint, which is slightly different from RAG. It still uses a KB but doesn't make use of the documents.
+
+```python main.py
+params = {
+    "kb": "06990a40-d5f8-43b2-8d26-50e515dddd14",
+    "q": "What do people think about VW Tiguan",
+    "withReferences": True
+}
+
+uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{agent_id}'
+
+body = {}
+
+resp = requests.post(uri, json=body, headers=headers, params=params).json()
+```
+
+The output should be something like this: 
+
+```json output.json
+{
+  "response": {
+    "answer": "The recent reviews on the Volkswagen Tiguan have been generally positive, highlighting its blend of practicality, comfort, and performance. The second generation, which was unveiled in 2016 and updated in 2020, has received praise for its spacious interior, advanced safety features (such as the IQ.Drive suite), and updated exterior styling. The Tiguan is offered in both short-wheelbase and long-wheelbase variants, the latter providing three rows of seats. Recent reviews also note the introduction of performance-oriented variants like the Tiguan R and the coupe-style Tiguan X, which further broaden its appeal. The updated infotainment system and multifunction digital steering wheel in the 2020 facelift have also been well received.",
+    "reference": [
+      {
+        "exeLayer": "ab80b1b7-de9c-4f9f-a7a8-347ec0fb8218",
+        "source": "https://en.wikipedia.org/wiki/Volkswagen_Tiguan"
+      }
+    ]
+  },
+  "queryId": "d5c3a18b-0277-4cba-96ec-4f74b8244767",
+  "conversationId": "565715d2-f46c-4cc5-aabb-0c9b768ed6c6"
+}
+```
+
+You are invited to explore our API reference to explore more advanced execution layers that can connect to free-form APIs
+and enable Agents that can interact with company data or industry-specific sources.

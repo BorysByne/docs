@@ -1,0 +1,156 @@
+---
+title: 'RAG'
+description: 'Build your first knowledge management tool'
+---
+
+## What's in this guide
+
+In this guide, we will go through LLMs' simplest and most common use case, building a knowledge management tool. 
+This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/18m02wxUkS7_oqF0q4FQlHZPgRcu2J-Ry?usp=sharing).
+
+### Creating a knowledge base
+"Byne" works around the concept of a "knowledge base". A "knowledge base" can be a collection of materials publicly accessible to all your end users or individual customers or any other collection of documents belonging to each one of your end customers or shared between them.
+When you start using the service, you create a knowledge base and add documents to the KB. We automatically parse the records and keep track of them. Then, when you need to generate some writing based on the documents, you can query the generative endpoint, which leverages the entire knowledge base or a subset of it belonging to a particular user to produce writing. We support hand-written and scanned PDFs in English, Spanish, Italian, Portuguese, French, German, textual PDF, and DOCX documents in all languages supported by your LLM.
+
+To create a knowledge base, we first need our auth headers.
+
+```python main.py
+import requests
+
+KEY = 'YOUR_BYNE_KEY'
+
+headers = {
+    'X-API-Key': KEY
+}
+```
+Now, we can create the KB. It's important to specify chunk size and overlap. By default, the chunk size is 800 tokens, and the chunk overlap is 400 tokens.
+This means that the uploaded document will be broken down into paragraphs of at most 800 tokens, with a 400-token overlap between them.
+
+```python main.py
+knowledge_base_obj = requests.post('https://app.docs.bynesoft.com/api/knowledge-base/', headers=headers, json={
+    "name": "myKB",
+    "type": "query",
+    "paragraphs": {
+      "chunkSize": 400,
+      "chunkOverlap": 200
+    }
+  }).json()
+
+knowledge_base_id = knowledge_base_obj['id']
+```
+This command creates a new KB with a chunk size of 400 tokens, and 200 tokens overlap.
+The output should look something like this:
+
+```json output.json
+{'id': 'e0193a78-1de8-4a19-8d4d-306e1c2e8f11',
+ 'name': 'myKB',
+ 'type': 'query',
+ 'paragraphs': {'chunkSize': 400, 'chunkOverlap': 200},
+ 'dateCreated': '2024-07-03T13:39:53.895471+00:00'}
+```
+
+### Ingesting a document
+
+To add a document to the KB, we first need to create a secure upload link. In the cloud deployment, the default channel for uploading documents is AWS S3. 
+When you migrate the environment onto your infrastructure, it will be a different provider, but the API will remain largely the same.
+
+In this guide, we will be using a report from NVIDIA called ["How On-Premises Deployment Can Overcome Six Critical AI Challenges"](https://www.supermicro.com/thought-leadership/Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf).
+
+```python main.py
+document_name = 'Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf'
+document_path = 'Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf'
+
+link = requests.get('https://app.docs.bynesoft.com/api/connectors/local/s3-upload-links',
+                   headers=headers,
+                   params={
+                       'kb': knowledge_base_id,
+                       'fileName': [document_name]
+                   })
+
+link_uri = link.json()[document_name]
+```
+
+Now, we may upload the document into the processing storage. Don't forget to specify the correct MIME to avoid errors!
+
+```python main.py
+mime_headers = {
+    "Content-Type": "application/pdf"
+}
+
+upload = requests.put(link_uri,
+                      data=open(document_path, 'rb'),
+                      headers=mime_headers)
+```
+
+### Launch processing
+
+To launch processing, you need to create a Job. It's simply a queue of files submitted for processing.
+
+```python main.py
+job_id = requests.get('https://app.docs.bynesoft.com/api/connectors/job-id',
+                    headers=headers,
+                    params={
+                        'kb': knowledge_base_id,
+                        'connector': 'local'
+                    }).json()
+```
+
+Once the Job has been created, you can add the uploaded file to it. All files in a Job are immediately picked up for processing.
+
+```python main.py
+import json 
+
+processing = requests.post(f'https://app.docs.bynesoft.com/api/connectors/local/trigger-process?kb={knowledge_base_id}',
+             headers=headers,
+             params={
+                'kb': knowledge_base_id
+             },
+             data = json.dumps({
+                "jobId": job_id,
+                "fileName": document_name,
+                "lastModified": "Wed Jul 10 2024"
+       }))
+```
+
+The output should look like this:
+
+```json output.json
+{'fileIndex': 'local_d9c3bf0a-b9b0-47f6-bc13-9d22f48ed2a7'}
+```
+
+### Generate!
+
+You can now generate writing or let the user chat to their KB by calling the generative endpoints.
+
+```python main.py
+resp = requests.post(f'https://app.docs.bynesoft.com/api/ask/query',
+             headers=headers,
+             params={
+                'kb': knowledge_base_id,
+                 'q': 'What are the benefits of running AI on-premise?',
+                 'withReference': True
+             },
+             data = "{}"
+            ).json()
+```
+
+```json output.json
+{'response': [{'answer': 'Running AI on-premise can allow organizations to use sensitive or proprietary data that must remain on-premises for regulatory or competitive purposes.',
+   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
+    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
+  {'answer': 'On-premise AI can be cost-effective when cloud costs, especially for moving large quantities of data, rise to unacceptable levels as AI processing needs increase.',
+   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
+    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
+  {'answer': 'Organizations may need specific configurations of AI hardware that are not available from cloud providers or for which performance cannot be assessed and assured beforehand, making on-premise deployment beneficial.',
+   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
+    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
+  {'answer': 'Enterprise-grade support is needed to supplement an organization's own staff and expertise when deploying AI on-premise.',
+   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
+    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}}],
+ 'queryId': '53b70db7-57c9-4e8c-a906-0bbdb65a2e78',
+ 'conversationId': '13fad5f8-bc8c-4ab3-a05a-1398b51f5d2a'}
+```
+
+We support many features for generation, including references to the original document, hybrid search, and system commands. 
+Please have a look at the API Reference for more details!
+

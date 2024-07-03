@@ -33,19 +33,14 @@
   ],
   "anchors": [
     {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
-    },
-    {
-      "name": "Community",
+      "name": "Customer Success",
       "icon": "slack",
-      "url": "https://mintlify.com/community"
+      "url": "mailto:hello@bynesoft.com"
     },
     {
       "name": "Blog",
       "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "url": "https://blog.bynedocs.com/"
     }
   ],
   "navigation": [
@@ -53,33 +48,74 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
-        "development"
-      ]
-    },
-    {
-      "group": "Essentials",
-      "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        {"group": "Guides",
+        "pages":[       
+           "RAG",
+          "Agents"
+        ]}
       ]
     },
     {
       "group": "API Documentation",
       "pages": [
-        "api-reference/introduction"
-      ]
-    },
-    {
-      "group": "Endpoint Examples",
-      "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "api-reference/introduction",
+        {
+          "group": "Knowledge Base",
+          "pages": [
+            {
+              "group": "General",
+              "pages": [
+                "api-reference/kb/general/list-all-users-knowledge-bases",
+                "api-reference/kb/general/create-knowledge-base",
+                "api-reference/kb/general/get-user-knowledge-base",
+                "api-reference/kb/general/update-knowledge-base",
+                "api-reference/kb/general/delete-knowledge-base",
+                "api-reference/kb/general/check-kb-readiness",
+                "api-reference/kb/general/retrieve-job-status",
+                "api-reference/kb/general/list-job-ids"
+              ]
+            },
+            {
+              "group": "Files",
+              "pages": [
+                "api-reference/kb/files/list-files",
+                "api-reference/kb/files/review-parsed-file-in-kb",
+                "api-reference/kb/files/delete-file-from-kb"
+              ]
+            },
+            {
+              "group": "Conversations",
+              "pages": [
+                "api-reference/kb/conversations/list-kb-conversations",
+                "api-reference/kb/conversations/get-conversations-data",
+                "api-reference/kb/conversations/delete-conversation-history",
+                "api-reference/kb/conversations/edit-conversations-title"
+              ]
+            },
+            {
+              "group": "Jobs",
+              "pages": [
+                "api-reference/kb/jobs/list-jobs-data",
+                "api-reference/kb/jobs/create-job",
+                "api-reference/kb/jobs/get-job-data",
+                "api-reference/kb/jobs/put-files-to-job",
+                "api-reference/kb/jobs/delete-job",
+                "api-reference/kb/jobs/trigger-job"
+              ]
+            }
+          ]
+        },{
+          "group": "Connectors",
+          "pages": [
+            "api-reference/connectors/connectors/create-a-job",
+            "api-reference/connectors/connectors/create-an-upload-link",
+            "api-reference/connectors/connectors/add-a-local-file-into-a-job",
+            "api-reference/connectors/connectors/add-a-google-drive-file-into-a-job",
+            "api-reference/connectors/connectors/put-confluence-configuration",
+            "api-reference/connectors/connectors/add-a-confluence-file-to-the-processing-job"
+          ]
+        }
+      
       ]
     }
   ],

@@ -1,0 +1,759 @@
+openapi: 3.1.0
+info:
+  title: ByneDocs Connectors
+  version: 1.0.0
+servers:
+  - url: https://app.docs.bynesoft.com/api/connectors
+paths:
+  /job-id:
+    get:
+      tags:
+        - connectors
+      summary: Create a Job
+      description: Create a Job and get its ID.
+      operationId: get_job_id_job_id_get
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Kb
+        - name: connector
+          in: query
+          required: true
+          schema:
+            enum:
+              - local
+              - gdrive
+              - confluence
+            type: string
+            title: Connector
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Get Job Id Job Id Get
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUnauthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthForbiddenError'
+          description: Forbidden
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /local/s3-upload-links:
+    get:
+      tags:
+        - connectors
+      summary: Create an upload link
+      description: Generate a signed secure link for uploading your local file into temporary storage.
+      operationId: s3_upload_links_local_s3_upload_links_get
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Kb
+        - name: fileName
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+            maxItems: 50
+            default: []
+            title: Filename
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                title: Response 200 S3 Upload Links Local S3 Upload Links Get
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadLinkBadRequest'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUnauthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthForbiddenError'
+          description: Forbidden
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /local/trigger-process:
+    post:
+      tags:
+        - connectors
+      summary: Add a local file into a Job
+      description: This endpoint adds a file uploaded via the secure link into a Job.
+      operationId: trigger_local_process_local_trigger_process_post
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Kb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerLocalProcessRequestBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerProcessResponseBody'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUnauthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthForbiddenError'
+          description: Forbidden
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /gdrive/trigger-process:
+    post:
+      tags:
+        - connectors
+      summary: Add a Google Drive file into a Job
+      description: This endpoint adds a file stored on Google Drive into a Job.
+      operationId: trigger_gdrive_process_gdrive_trigger_process_post
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Kb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerGdriveProcessRequestBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerProcessResponseBody'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerGdriveBadRequest'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUnauthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerGdriveForbiddenError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerGdriveNotFoundError'
+          description: Not Found
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerGdriveUnsupportedMediaType'
+          description: Unsupported Media Type
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerTooManyRequestsError'
+          description: Too Many Requests
+  /confluence/config:
+    put:
+      tags:
+        - connectors
+      summary: Put Confluence configuration
+      description: |-
+        This endpoint puts main configuration information for Confluence Connector. The request body fields are:
+        - **network**: your organization name used in Atlassian domain name 
+        - **email**: user email address 
+        - **token**: Atlassian user api token
+      operationId: put_confluence_configuration_confluence_config_put
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Kb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutConfluenceConfigRequestBody'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfluenceNotAuthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutConfluenceConfigForbiddenError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PutConfluencConfigNotFoundError'
+          description: Not Found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /confluence/trigger-process:
+    post:
+      tags:
+        - connectors
+      summary: Add a Confluence file to the Processing job
+      description: This endpoint adds a file stored in Confluence into a Job.
+      operationId: trigger_confluence_process_confluence_trigger_process_post
+      security:
+        - Cognito_IdP: []
+        - APIKey: []
+      parameters:
+        - name: kb
+          in: query
+          required: true
+          schema:
+            type: string
+            title: Kb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerConfluenceProcessRequestBody'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceOkStatus'
+          description: OK
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceProcessResponseBody'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceBadRequest'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfluenceNotAuthorizedError'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceForbiddenError'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceNotFoundError'
+          description: Not Found
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceUnprocessableEntityError'
+          description: Unprocessable Entity
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerTooManyRequestsError'
+          description: Too Many Requests
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceFailedProcessError'
+          description: Internal Server Error
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerConfluenceServiceUnavailableError'
+          description: Service Unavailable
+components:
+  schemas:
+    AuthForbiddenError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - JWK public key not found
+            - JWK invalid
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: AuthForbiddenError
+    AuthUnauthorizedError:
+      properties:
+        detail:
+          const: Token expired
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: AuthUnauthorizedError
+    ConfluenceContentBody:
+      properties:
+        fileId:
+          type: string
+          title: Fileid
+        contentId:
+          type: string
+          title: Contentid
+        detail:
+          type: string
+          title: Detail
+      type: object
+      required:
+        - fileId
+        - contentId
+        - detail
+      title: ConfluenceContentBody
+    ConfluenceNotAuthorizedError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - Invalid confluence configuration information
+            - Token expired
+            - Invalid API Key
+            - Not authenticated
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: ConfluenceNotAuthorizedError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PutConfluencConfigNotFoundError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - KB not found
+            - Network not found
+            - ContentId not found
+            - Space not found
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: PutConfluencConfigNotFoundError
+    PutConfluenceConfigForbiddenError:
+      properties:
+        detail:
+          const: Access denied
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: PutConfluenceConfigForbiddenError
+    PutConfluenceConfigRequestBody:
+      properties:
+        network:
+          type: string
+          title: Network
+        email:
+          type: string
+          title: Email
+        token:
+          type: string
+          title: Token
+      type: object
+      required:
+        - network
+        - email
+        - token
+      title: PutConfluenceConfigRequestBody
+    TriggerConfluenceBadRequest:
+      properties:
+        detail:
+          const: Invalid KB provided. Please, use query KB
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceBadRequest
+    TriggerConfluenceFailedProcessError:
+      properties:
+        detail:
+          const: Failed to start the process
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceFailedProcessError
+    TriggerConfluenceForbiddenError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - Confluence configuration information was not provided
+            - Access denied
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceForbiddenError
+    TriggerConfluenceNotFoundError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - KB not found
+            - Network not found
+            - ContentId not found
+            - Space not found
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceNotFoundError
+    TriggerConfluenceOkStatus:
+      properties:
+        detail:
+          type: string
+          enum:
+            - No documents to upload
+            - All documents are up to date
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceOkStatus
+    TriggerConfluenceProcessRequestBody:
+      properties:
+        jobId:
+          type: string
+          title: Jobid
+        space:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Space
+        contentId:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Contentid
+        checkChildren:
+          type: boolean
+          title: Checkchildren
+          default: true
+      type: object
+      required:
+        - jobId
+      title: TriggerConfluenceProcessRequestBody
+    TriggerConfluenceProcessResponseBody:
+      properties:
+        submittedContent:
+          items:
+            $ref: '#/components/schemas/ConfluenceContentBody'
+          type: array
+          title: Submittedcontent
+        failedContent:
+          items:
+            $ref: '#/components/schemas/ConfluenceContentBody'
+          type: array
+          title: Failedcontent
+      type: object
+      required:
+        - submittedContent
+        - failedContent
+      title: TriggerConfluenceProcessResponseBody
+    TriggerConfluenceServiceUnavailableError:
+      properties:
+        detail:
+          const: Confluence network is not responding
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceServiceUnavailableError
+    TriggerConfluenceUnprocessableEntityError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - Either space or content id must be provided
+            - Both space and content id cannot be set at a time
+            - CkeckChildren must be set to true with provided space
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerConfluenceUnprocessableEntityError
+    TriggerGdriveBadRequest:
+      properties:
+        detail:
+          type: string
+          enum:
+            - File size is larger than 15 MB
+            - Technical KBs support only .csv and .parquet files
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerGdriveBadRequest
+    TriggerGdriveForbiddenError:
+      properties:
+        detail:
+          type: string
+          enum:
+            - GDrive configuration information was not provided
+            - Token has been expired. Please, create a new configuration
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerGdriveForbiddenError
+    TriggerGdriveNotFoundError:
+      properties:
+        detail:
+          const: File not found
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerGdriveNotFoundError
+    TriggerGdriveProcessRequestBody:
+      properties:
+        jobId:
+          type: string
+          title: Jobid
+        fileId:
+          type: string
+          title: Fileid
+        isDeclined:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Isdeclined
+        detail:
+          type: string
+          title: Detail
+          default: No detail
+      type: object
+      required:
+        - jobId
+        - fileId
+      title: TriggerGdriveProcessRequestBody
+    TriggerGdriveUnsupportedMediaType:
+      properties:
+        detail:
+          const: Unsupported file extension
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerGdriveUnsupportedMediaType
+    TriggerLocalProcessRequestBody:
+      properties:
+        jobId:
+          type: string
+          title: Jobid
+        fileName:
+          type: string
+          title: Filename
+        isDeclined:
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Isdeclined
+        detail:
+          type: string
+          title: Detail
+          default: No detail
+        lastModified:
+          type: string
+          title: Lastmodified
+      type: object
+      required:
+        - jobId
+        - fileName
+        - lastModified
+      title: TriggerLocalProcessRequestBody
+    TriggerProcessResponseBody:
+      properties:
+        fileIndex:
+          type: string
+          title: Fileindex
+      type: object
+      required:
+        - fileIndex
+      title: TriggerProcessResponseBody
+    TriggerTooManyRequestsError:
+      properties:
+        detail:
+          const: The docs limit was exceeded
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: TriggerTooManyRequestsError
+    UploadLinkBadRequest:
+      properties:
+        detail:
+          const: Technical KBs support only .csv and .parquet files
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: UploadLinkBadRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+  securitySchemes:
+    Cognito2IdP:
+      type: oauth2
+      flows:
+        authorizationCode:
+          scopes:
+            openid: Grants access to the OpenID Connect ID token
+            email: Grants access to the user's email address
+            profile: Grants access to the user's basic profile information
+          authorizationUrl: https://auth.dev.docs.bynesoft.com/oauth2/authorize
+          tokenUrl: https://auth.dev.docs.bynesoft.com/oauth2/token
+    APIKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
