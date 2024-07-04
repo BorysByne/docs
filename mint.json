@@ -171,5 +171,11 @@
   ],
   "footerSocials": {
     "linkedin": "https://www.linkedin.com/company/bynesoftai"
-  }
+  },
+  "openapi": [
+    "api-reference/users/openapi.json", 
+    "api-reference/knowledge-base/openapi.json", 
+    "api-reference/ask/openapi.json", 
+    "api-reference/connectors/openapi.json"
+  ]
 }
