@@ -3,8 +3,13 @@
   "name": "Byne Documentation",
   "logo": {
     "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "light": "/logo/light.svg",
+    "href": "https://bynedocs.com/"
   },
+  "modeToggle": {
+    "default": "light",
+    "isHidden": true
+},
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#3e37fc",
