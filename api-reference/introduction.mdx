@@ -1,35 +1,20 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Welcome to the API Reference!'
 ---
 
-
-
 <Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
+ We are still in beta mode, adding more features and refining existing endpoints. If you plan to use the cloud version for production, please reach out to us to set up a frozen deployment.
 </Note>
 
-## Welcome
+## Structure
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+Our API is structured around the four key verticals: **Connectors**, **Assets**, **Generative endpoints**, and **Knowledge Base management**.
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+The **Connectors** are pretty empty yet, as we are working on adding ingestion from more sources. We will soon have support for Confluence, but send us requests if you'd like us to add support for a particular data source faster.
 
-## Authentication
+**Assets** include all technical entities like Agents and LLMs. If you have your own installation, it will also include management of embedding models and the vector DB.
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+**Generative endpoints** are, well, a collection of everything you need to generate text, either from Agents or based on a KB.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+**Knowledge Base management** includes everything related to the KB, including the knowledge base itself, conversations, and files.

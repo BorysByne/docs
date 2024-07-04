@@ -1,29 +1,29 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "Byne Documentation",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#3e37fc",
+    "light": "#3e37fc",
+    "dark": "#3e37fc",
     "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+      "from": "#3e37fc",
+      "to": "#3e37fc"
     }
   },
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:hello@bynesoft.com"
     }
   ],
   "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "name": "Sign Up",
+    "url": "https://app.docs.bynesoft.com/"
   },
   "tabs": [
     {
@@ -32,11 +32,6 @@
     }
   ],
   "anchors": [
-    {
-      "name": "Customer Success",
-      "icon": "slack",
-      "url": "mailto:hello@bynesoft.com"
-    },
     {
       "name": "Blog",
       "icon": "newspaper",
@@ -70,9 +65,7 @@
                 "api-reference/kb/general/get-user-knowledge-base",
                 "api-reference/kb/general/update-knowledge-base",
                 "api-reference/kb/general/delete-knowledge-base",
-                "api-reference/kb/general/check-kb-readiness",
-                "api-reference/kb/general/retrieve-job-status",
-                "api-reference/kb/general/list-job-ids"
+                "api-reference/kb/general/check-kb-readiness"
               ]
             },
             {
@@ -107,12 +100,64 @@
         },{
           "group": "Connectors",
           "pages": [
-            "api-reference/connectors/connectors/create-a-job",
-            "api-reference/connectors/connectors/create-an-upload-link",
-            "api-reference/connectors/connectors/add-a-local-file-into-a-job",
-            "api-reference/connectors/connectors/add-a-google-drive-file-into-a-job",
-            "api-reference/connectors/connectors/put-confluence-configuration",
-            "api-reference/connectors/connectors/add-a-confluence-file-to-the-processing-job"
+            "api-reference/connectors/connectors/create-an-upload-link"
+          ]
+        },{
+          "group": "Generative",
+          "pages": [
+            {
+              "group": "Generate",
+              "pages": [
+                "api-reference/ask/general/query-documents-with-machine-readable-output",
+                "api-reference/ask/general/retrieve-top-query-related-documents",
+                "api-reference/ask/general/query-agents"
+              ]
+            },
+            {
+              "group": "Templates (System Prompts)",
+              "pages": [
+                "api-reference/ask/templates/get-templates",
+                "api-reference/ask/templates/post-create-template",
+                "api-reference/ask/templates/get-template",
+                "api-reference/ask/templates/delete-template",
+                "api-reference/ask/templates/update-template"
+              ]
+            }
+          ]
+        },{
+          "group": "Assets",
+          "pages": [
+            {
+              "group": "LLMs",
+              "pages": [
+                "api-reference/users/llms/get-llm-configs",
+                "api-reference/users/llms/post-create-llm-config",
+                "api-reference/users/llms/get-llm-config",
+                "api-reference/users/llms/delete-llm-config",
+                "api-reference/users/llms/update-llm-config"
+              ]
+            },
+            {
+              "group": "User",
+              "pages": [
+                "api-reference/users/me/get-account-information"
+              ]
+            },
+            {
+              "group": "Agents",
+              "pages": [
+                "api-reference/users/agents/get-execution-layers",
+                "api-reference/users/agents/post-create-execution-layer",
+                "api-reference/users/agents/get-execution-layer",
+                "api-reference/users/agents/delete-execution-layer",
+                "api-reference/users/agents/update-execution-layer",
+                "api-reference/users/agents/get-agents",
+                "api-reference/users/agents/post-create-agent",
+                "api-reference/users/agents/get-agent",
+                "api-reference/users/agents/delete-agent",
+                "api-reference/users/agents/update-agent"
+              ]
+            }
           ]
         }
       
@@ -120,8 +165,6 @@
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://www.linkedin.com/company/mintsearch"
+    "linkedin": "https://www.linkedin.com/company/bynesoftai"
   }
 }

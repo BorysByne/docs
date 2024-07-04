@@ -13,6 +13,8 @@ We also support prompt-enforced function calls for older models, but you may nee
 Here, we will build a simple Agent that's capable of going to Wikipedia to retrieve relevant data for producing an answer. Our Agents come in two forms: the restricted Google Agent
 and a free-form API Caller. With Google Agent, you can enable the LLM to do Google Search, and the free-form enables requests to arbitrary APIs.
 
+This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/1vXdyamZ1gmVcZGLF2WKUHNw8OB5xa0es?usp=sharing).
+
 ### Define the execution layer
 An execution layer is likely the most important part of an Agent. It specifies the schema for the function call, intercepts it, and executes it.
 We will create a Google execution layer restricted to Wikipedia:
@@ -79,33 +81,26 @@ Agents have their own generative endpoint, which is slightly different from RAG.
 ```python main.py
 params = {
     "kb": "06990a40-d5f8-43b2-8d26-50e515dddd14",
-    "q": "What do people think about VW Tiguan",
-    "withReferences": True
+    "q": "Where do polar bears live",
+    "withReference": True
 }
 
-uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{agent_id}'
+uri = f'https://dev.docs.bynesoft.com/api/ask/query/agents/{agent_id}'
 
 body = {}
 
 resp = requests.post(uri, json=body, headers=headers, params=params).json()
+resp
 ```
 
 The output should be something like this: 
 
 ```json output.json
-{
-  "response": {
-    "answer": "The recent reviews on the Volkswagen Tiguan have been generally positive, highlighting its blend of practicality, comfort, and performance. The second generation, which was unveiled in 2016 and updated in 2020, has received praise for its spacious interior, advanced safety features (such as the IQ.Drive suite), and updated exterior styling. The Tiguan is offered in both short-wheelbase and long-wheelbase variants, the latter providing three rows of seats. Recent reviews also note the introduction of performance-oriented variants like the Tiguan R and the coupe-style Tiguan X, which further broaden its appeal. The updated infotainment system and multifunction digital steering wheel in the 2020 facelift have also been well received.",
-    "reference": [
-      {
-        "exeLayer": "ab80b1b7-de9c-4f9f-a7a8-347ec0fb8218",
-        "source": "https://en.wikipedia.org/wiki/Volkswagen_Tiguan"
-      }
-    ]
-  },
-  "queryId": "d5c3a18b-0277-4cba-96ec-4f74b8244767",
-  "conversationId": "565715d2-f46c-4cc5-aabb-0c9b768ed6c6"
-}
+{'response': {'answer': 'Polar bears inhabit the Arctic and adjacent areas, including Greenland, Canada, Alaska, Russia, and the Svalbard Archipelago of Norway.',
+  'reference': [{'exeLayer': '3f1bd462-b6d8-433e-a0d8-c854f441923a',
+    'source': 'https://en.wikipedia.org/wiki/Polar_bear'}]},
+ 'queryId': '6b69ba62-4894-4bbb-bd82-a062e2fcc981',
+ 'conversationId': '05306183-ae0b-4369-9ec2-dcd12750e428'}
 ```
 
 You are invited to explore our API reference to explore more advanced execution layers that can connect to free-form APIs
