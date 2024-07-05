@@ -170,7 +170,6 @@
             }
           ]
         }
-      
       ]
     }
   ],
@@ -178,9 +177,9 @@
     "linkedin": "https://www.linkedin.com/company/bynesoftai"
   },
   "openapi": [
-    "/api-reference/knowledge-base/openapi.json",
-    "/api-reference/users/openapi.json", 
-    "/api-reference/ask/openapi.json", 
-    "/api-reference/connectors/openapi.json"
+    "https://app.docs.bynesoft.com/api/knowledge-base/openapi.json",
+    "https://app.docs.bynesoft.com/api/ask/openapi.json", 
+    "https://app.docs.bynesoft.com/api/users/openapi.json", 
+    "https://app.docs.bynesoft.com/api/connectors/openapi.json"
   ]
 }
