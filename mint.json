@@ -41,6 +41,11 @@
       "name": "Blog",
       "icon": "newspaper",
       "url": "https://blog.bynedocs.com/"
+    },
+    {
+      "name": "Community",
+      "icon": "slack",
+      "url": "https://join.slack.com/t/byne-workspace/shared_invite/zt-2mfqavd0w-TlrOBqp~_W_uka4mRhpEtg"
     }
   ],
   "navigation": [
