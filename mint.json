@@ -56,7 +56,8 @@
         {"group": "Guides",
         "pages":[       
            "RAG",
-          "Agents"
+          "Agents",
+          "Guardrails"
         ]}
       ]
     },
@@ -167,7 +168,18 @@
                 "api-reference/users/agents/delete-agent",
                 "api-reference/users/agents/update-agent"
               ]
+            },
+            {
+              "group": "Guardrails",
+              "pages": [
+                "api-reference/users/guard-rails/get-guard-rails",
+                "api-reference/users/guard-rails/post-create-guard-rail",
+                "api-reference/users/guard-rails/get-guard-rail",
+                "api-reference/users/guard-rails/delete-guard-rail",
+                "api-reference/users/guard-rails/patch-guard-rail"
+              ]
             }
+          
           ]
         }
       ]

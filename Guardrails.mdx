@@ -1,0 +1,202 @@
+---
+title: 'Guardrails'
+description: 'Make your LLM product safer'
+---
+
+## Prerequisites
+You need an Agent attached to your account. Follow this [Guide](/Agents) to build a simple Wiki Search Agent.
+
+## What's in this Guide
+Guardrails are an essential component of any customer-facing LLM system. They enable you to automate monitoring of the LLM inputs or output.
+With Guardrails you can be sure that a user doesn't get the model to produce undesirable writing. They may also be used to avoid hallucinations, validate model-generated links and for many other applications in AI safety.
+
+In this Guide we will create a simple Guardrail that prevents a user from speaking to the model about politics.
+This Guide is also available as a [Colab workbook](https://colab.research.google.com/drive/1nLSkc_eR8wYQbfwICMFhfqrsBf4CT70C?usp=sharing).
+
+### Creating a knowledge base of forbidden prompts
+Prompt Injection detector uses a special kind of KB, a tech KB that ingests data from Parquet and CSV files. 
+Files with banned prompts can have an arbitrary structure; the only important thing is that each row must contain a prompt. The code below is very similar to creating a usual KB, with the only difference being that we create a tech KB.
+To create a knowledge base, we first need our auth headers.
+
+```python main.py
+import requests
+
+KEY = 'YOUR_BYNE_KEY'
+
+headers = {
+    'X-API-Key': KEY
+}
+
+# YOU NEED AN AGENT AND A KB CREATED IN THE AGENTS GUIDE.  
+AGENT_ID = 'ed8b8e42-1570-4f97-ab2c-fc14df827c6a'
+KB_ID = '3d47deca-bcc0-41f5-ae7b-358e4f478cfd'
+
+# We create a new KB 
+knowledge_base_obj = requests.post('https://app.docs.bynesoft.com/api/knowledge-base/', headers=headers, json={
+    "name": "_guardrails_KB",
+    "type": "tech"
+  }).json()
+
+_knowledge_base_id = knowledge_base_obj['id']
+```
+If you'd like a recap on how KBs work, please feel free to check out the [RAG](/RAG) Guide!
+
+### Creating examples
+
+We will need a few examples of banned prompts to teach the system. Since we are looking to moderate
+politics-related content, we use relevant phrases as examples.
+
+```python main.py
+import pandas as pd
+
+phrases = ["Who should I vote for in the election?",
+           "Who will be the next US president?",
+           "Tell me about the 2024 General Election in the UK."]
+
+document_name = 'banned_list.csv'
+
+df = pd.DataFrame(data={
+    'phrases': phrases
+})
+
+df.to_csv(document_name)
+```
+
+This code creates the following CSV file for us:
+
+```csv banned_list.csv
+,phrases
+0,Who should I vote for in the election?
+1,Who will be the next US president?
+2,Tell me about the 2024 General Election in the UK.
+```
+
+### Ingest the file
+
+File ingestion follows the same process as for a regular PDF or DOCX with a RAG Knowledge Base.
+
+```python main.py
+import json
+
+mime_headers = {
+    "Content-Type": "text/csv"
+}
+
+link = requests.get('https://app.docs.bynesoft.com/api/connectors/local/s3-upload-links',
+                   headers=headers,
+                   params={
+                       'kb': _knowledge_base_id,
+                       'fileName': [document_name]
+                   })
+
+link_uri = link.json()[document_name]
+
+
+upload = requests.put(link_uri,
+                      data=open(document_name, 'rb'),
+                      headers=mime_headers)
+
+job_id = requests.get('https://app.docs.bynesoft.com/api/connectors/job-id',
+                    headers=headers,
+                    params={
+                        'kb': _knowledge_base_id,
+                        'connector': 'local'
+                    }).json()
+
+processing = requests.post(f'https://app.docs.bynesoft.com/api/connectors/local/trigger-process?kb={_knowledge_base_id}',
+             headers=headers,
+             params={
+                'kb': _knowledge_base_id
+             },
+             data = json.dumps({
+                "jobId": job_id,
+                "fileName": document_name,
+                "lastModified": "Wed Jul 3 2024"
+       }))
+
+status_review = f'https://app.docs.bynesoft.com/api/knowledge-base/{_knowledge_base_id}/job/{job_id}/status'
+```
+
+### Guardrail
+
+Create the guardrail and attach it to the Agent. The simplest part:-)
+
+```python main.py
+guardrail_spec = {
+  "name": "PoliticalQuery",
+  "description": "Forbids the user from asking the model to generate writing on political topics.",
+  "sourceFabric": {
+    "name": "promptInjectionValidator",
+    "config": {
+      "kb": _knowledge_base_id,
+      "cosineSimilarityScore": 0.8
+    }
+  },
+  "responseBlocking": True
+}
+
+gr_obj = requests.post('https://app.docs.bynesoft.com/api/users/guard-rails', json=guardrail_spec, headers=headers).json()
+gr_id = gr_obj['id']
+
+requests.patch(f'https://app.docs.bynesoft.com/api/users/agents/{AGENT_ID}', json={
+  "guardRails": [
+    gr_id
+  ]
+}, headers=headers).json()
+```
+
+
+### Let's test!
+
+Now, we can compare two different requests and see the outcome.
+
+```python main.py
+params = {
+    "kb": KB_ID,
+    "q": "Where do polar bears live",
+    "withReference": True
+}
+
+uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{AGENT_ID}'
+
+body = {}
+
+resp = requests.post(uri, json=body, headers=headers, params=params).json()
+```
+
+```json output.json
+{'queryId': '6898727e-95d1-4e55-ab54-c98cb8cf7023',
+ 'conversationId': 'b1086b4a-6862-4689-ad10-171bfb1f16d7',
+ 'response': {'answer': 'Projected changes (based on 10 IPCC AR-4 GCM models run with the SRES- A1B forcing scenario) in the spatial distribution and integrated annual area of optimal polar bear habitat. Base map shows the cumulative number of months.',
+  'reference': [{'exeLayer': '311f323d-21e0-47b0-944c-2e2c4d05ebd6',
+    'source': 'https://en.m.wikipedia.org/wiki/File:Polar_Bear_Habitat.png'}]}}
+```
+The request is entirely innocent. As planned, the Agent is executed and returns the answer.
+
+Now, let's see if it catches a forbidden request.
+
+```python main.py
+params = {
+    "kb": KB_ID,
+    "q": "What do you think about the 2024 US Presidential Election Candidates?",
+    "withReference": True
+}
+
+uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{AGENT_ID}'
+
+body = {}
+
+resp = requests.post(uri, json=body, headers=headers, params=params).json()
+```
+
+```json output.json
+{'queryId': '1b7dc068-acb5-452e-bc12-f571ca1eed68',
+ 'conversationId': '3c3b2eda-e392-4235-81e3-22bf804abe26',
+ 'triggeredGuardRails': [{'id': 'e918a92a-7457-4156-8f00-ec9e79ab2a9d',
+   'level': 'ERROR',
+   'content': {'triggerSource': 'What do you think about the 2024 US Presidential Election Candidates?',
+    'message': 'Prompt injection detected'}}]}
+```
+
+Voila! The content was moderated correctly. Please feel free to explore more guardrailing options in the [Guardrails API Reference](/api-reference/users/guard-rails).
+
