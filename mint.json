@@ -193,5 +193,10 @@
     "https://app.docs.bynesoft.com/api/ask/openapi.json", 
     "https://app.docs.bynesoft.com/api/users/openapi.json", 
     "https://app.docs.bynesoft.com/api/connectors/openapi.json"
-  ]
+  ],
+  "analytics": {
+    "ga4": {
+        "measurementId": "G-JTWFR4GNPE"
+    }
+}
 }
