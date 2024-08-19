@@ -76,16 +76,15 @@ agent_id = agent_obj['id']
 
 ### Generate!
 
-Agents have their own generative endpoint, which is slightly different from RAG. It still uses a KB but doesn't make use of the documents.
+Agents have their own generative endpoint, which is slightly different from RAG. 
 
 ```python main.py
 params = {
-    "kb": "06990a40-d5f8-43b2-8d26-50e515dddd14",
     "q": "Where do polar bears live",
     "withReference": True
 }
 
-uri = f'https://dev.docs.bynesoft.com/api/ask/query/agents/{agent_id}'
+uri = f'https://dev.docs.bynesoft.com/api/ask/agents/{agent_id}/query'
 
 body = {}
 

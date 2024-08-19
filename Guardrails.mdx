@@ -152,12 +152,11 @@ Now, we can compare two different requests and see the outcome.
 
 ```python main.py
 params = {
-    "kb": KB_ID,
     "q": "Where do polar bears live",
     "withReference": True
 }
 
-uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{AGENT_ID}'
+uri = f'https://app.docs.bynesoft.com/api/ask/agents/{AGENT_ID}/query'
 
 body = {}
 
@@ -177,12 +176,11 @@ Now, let's see if it catches a forbidden request.
 
 ```python main.py
 params = {
-    "kb": KB_ID,
     "q": "What do you think about the 2024 US Presidential Election Candidates?",
     "withReference": True
 }
 
-uri = f'https://app.docs.bynesoft.com/api/ask/query/agents/{AGENT_ID}'
+uri = f'https://app.docs.bynesoft.com/api/ask/agents/{AGENT_ID}/query'
 
 body = {}
 

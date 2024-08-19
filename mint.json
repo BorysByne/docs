@@ -1,202 +1,207 @@
 {
-  "$schema": "https://mintlify.com/schema.json",
-  "name": "Byne Documentation",
-  "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg",
-    "href": "https://bynedocs.com/"
-  },
-  "modeToggle": {
-    "default": "light",
-    "isHidden": true
-},
-  "favicon": "/favicon.svg",
-  "colors": {
-    "primary": "#3e37fc",
-    "light": "#3e37fc",
-    "dark": "#3e37fc",
-    "anchors": {
-      "from": "#3e37fc",
-      "to": "#3e37fc"
-    }
-  },
-  "topbarLinks": [
-    {
-      "name": "Support",
-      "url": "mailto:hello@bynesoft.com"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "Sign Up",
-    "url": "https://app.docs.bynesoft.com/"
-  },
-  "tabs": [
-    {
-      "name": "API Reference",
-      "url": "api-reference"
-    }
-  ],
-  "anchors": [
-    {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://blog.bynedocs.com/"
-    },
-    {
-      "name": "Community",
-      "icon": "slack",
-      "url": "https://join.slack.com/t/byne-workspace/shared_invite/zt-2mfqavd0w-TlrOBqp~_W_uka4mRhpEtg"
-    }
-  ],
-  "navigation": [
-    {
-      "group": "Get Started",
-      "pages": [
-        "introduction",
-        {"group": "Guides",
-        "pages":[       
-           "RAG",
-          "Agents",
-          "Guardrails"
-        ]}
-      ]
-    },
-    {
-      "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction",
-        {
-          "group": "Knowledge Base",
-          "pages": [
-            {
-              "group": "General",
-              "pages": [
-                "api-reference/kb/general/list-all-users-knowledge-bases",
-                "api-reference/kb/general/create-knowledge-base",
-                "api-reference/kb/general/get-user-knowledge-base",
-                "api-reference/kb/general/update-knowledge-base",
-                "api-reference/kb/general/delete-knowledge-base",
-                "api-reference/kb/general/check-kb-readiness"
-              ]
-            },
-            {
-              "group": "Files",
-              "pages": [
-                "api-reference/kb/files/list-files",
-                "api-reference/kb/files/review-parsed-file-in-kb",
-                "api-reference/kb/files/delete-file-from-kb"
-              ]
-            },
-            {
-              "group": "Conversations",
-              "pages": [
-                "api-reference/kb/conversations/list-kb-conversations",
-                "api-reference/kb/conversations/get-conversations-data",
-                "api-reference/kb/conversations/delete-conversation-history",
-                "api-reference/kb/conversations/edit-conversations-title"
-              ]
-            },
-            {
-              "group": "Jobs",
-              "pages": [
-                "api-reference/kb/jobs/list-jobs-data",
-                "api-reference/kb/jobs/create-job",
-                "api-reference/kb/jobs/get-job-data",
-                "api-reference/kb/jobs/put-files-to-job",
-                "api-reference/kb/jobs/delete-job",
-                "api-reference/kb/jobs/trigger-job"
-              ]
-            }
-          ]
-        },{
-          "group": "Connectors",
-          "pages": [
-            "api-reference/connectors/connectors/create-an-upload-link"
-          ]
-        },{
-          "group": "Generative",
-          "pages": [
-            {
-              "group": "Generate",
-              "pages": [
-                "api-reference/ask/general/query-documents-with-machine-readable-output",
-                "api-reference/ask/general/retrieve-top-query-related-documents",
-                "api-reference/ask/general/query-agents"
-              ]
-            },
-            {
-              "group": "Templates (System Prompts)",
-              "pages": [
-                "api-reference/ask/templates/get-templates",
-                "api-reference/ask/templates/post-create-template",
-                "api-reference/ask/templates/get-template",
-                "api-reference/ask/templates/delete-template",
-                "api-reference/ask/templates/update-template"
-              ]
-            }
-          ]
-        },{
-          "group": "Assets",
-          "pages": [
-            {
-              "group": "LLMs",
-              "pages": [
-                "api-reference/users/llms/get-llm-configs",
-                "api-reference/users/llms/post-create-llm-config",
-                "api-reference/users/llms/get-llm-config",
-                "api-reference/users/llms/delete-llm-config",
-                "api-reference/users/llms/update-llm-config"
-              ]
-            },
-            {
-              "group": "User",
-              "pages": [
-                "api-reference/users/me/get-account-information"
-              ]
-            },
-            {
-              "group": "Agents",
-              "pages": [
-                "api-reference/users/agents/get-execution-layers",
-                "api-reference/users/agents/post-create-execution-layer",
-                "api-reference/users/agents/get-execution-layer",
-                "api-reference/users/agents/delete-execution-layer",
-                "api-reference/users/agents/update-execution-layer",
-                "api-reference/users/agents/get-agents",
-                "api-reference/users/agents/post-create-agent",
-                "api-reference/users/agents/get-agent",
-                "api-reference/users/agents/delete-agent",
-                "api-reference/users/agents/update-agent"
-              ]
-            },
-            {
-              "group": "Guardrails",
-              "pages": [
-                "api-reference/users/guard-rails/get-guard-rails",
-                "api-reference/users/guard-rails/post-create-guard-rail",
-                "api-reference/users/guard-rails/get-guard-rail",
-                "api-reference/users/guard-rails/delete-guard-rail",
-                "api-reference/users/guard-rails/patch-guard-rail"
-              ]
-            }
-          
-          ]
-        }
-      ]
-    }
-  ],
-  "footerSocials": {
-    "linkedin": "https://www.linkedin.com/company/bynesoftai"
-  },
-  "openapi": [
-    "https://app.docs.bynesoft.com/api/knowledge-base/openapi.json",
-    "https://app.docs.bynesoft.com/api/ask/openapi.json", 
-    "https://app.docs.bynesoft.com/api/users/openapi.json", 
-    "https://app.docs.bynesoft.com/api/connectors/openapi.json"
-  ],
-  "analytics": {
-    "ga4": {
-        "measurementId": "G-JTWFR4GNPE"
-    }
-}
+	"$schema":"https://mintlify.com/schema.json",
+	"name":"Byne Documentation",
+	"logo":{
+		"dark":"/logo/dark.svg",
+		"light":"/logo/light.svg",
+		"href":"https://bynedocs.com/"
+	},
+	"modeToggle":{
+		"default":"light",
+		"isHidden":true
+	},
+	"favicon":"/favicon.svg",
+	"colors":{
+		"primary":"#3e37fc",
+		"light":"#3e37fc",
+		"dark":"#3e37fc",
+		"anchors":{
+			"from":"#3e37fc",
+			"to":"#3e37fc"
+		}
+	},
+	"topbarLinks":[
+		{
+			"name":"Support",
+			"url":"mailto:hello@bynesoft.com"
+		}
+	],
+	"topbarCtaButton":{
+		"name":"Sign Up",
+		"url":"https://app.docs.bynesoft.com/"
+	},
+	"tabs":[
+		{
+			"name":"API Reference",
+			"url":"api-reference"
+		}
+	],
+	"anchors":[
+		{
+			"name":"Blog",
+			"icon":"newspaper",
+			"url":"https://blog.bynedocs.com/"
+		},
+		{
+			"name":"Community",
+			"icon":"slack",
+			"url":"https://join.slack.com/t/byne-workspace/shared_invite/zt-2mfqavd0w-TlrOBqp~_W_uka4mRhpEtg"
+		}
+	],
+	"navigation":[
+		{
+			"group":"Get Started",
+			"pages":[
+				"introduction",
+				{
+					"group":"Guides",
+					"pages":[
+						"RAG",
+						"Agents",
+						"Guardrails"
+					]
+				}
+			]
+		},
+		{
+			"group":"API Documentation",
+			"pages":[
+				"api-reference/introduction",
+				{
+					"group":"Knowledge Base",
+					"pages":[
+						{
+							"group":"General",
+							"pages":[
+								"api-reference/kb/general/list-all-users-knowledge-bases",
+								"api-reference/kb/general/create-knowledge-base",
+								"api-reference/kb/general/get-user-knowledge-base",
+								"api-reference/kb/general/update-knowledge-base",
+								"api-reference/kb/general/delete-knowledge-base",
+								"api-reference/kb/general/check-kb-readiness"
+							]
+						},
+						{
+							"group":"Files",
+							"pages":[
+								"api-reference/kb/files/list-files",
+								"api-reference/kb/files/review-parsed-file-in-kb",
+								"api-reference/kb/files/delete-file-from-kb"
+							]
+						},
+						{
+							"group":"Jobs",
+							"pages":[
+								"api-reference/kb/jobs/list-jobs-data",
+								"api-reference/kb/jobs/create-job",
+								"api-reference/kb/jobs/get-job-data",
+								"api-reference/kb/jobs/put-files-to-job",
+								"api-reference/kb/jobs/delete-job",
+								"api-reference/kb/jobs/trigger-job"
+							]
+						}
+					]
+				},
+				{
+					"group":"Connectors",
+					"pages":[
+						"api-reference/connectors/connectors/create-an-upload-link"
+					]
+				},
+				{
+					"group":"Generative",
+					"pages":[
+						{
+							"group":"Generate",
+							"pages":[
+								"api-reference/ask/general/query-documents-with-machine-readable-output",
+								"api-reference/ask/general/retrieve-top-query-related-documents",
+								"api-reference/ask/general/query-agents"
+							]
+						},
+						{
+							"group":"Templates (Prompts)",
+							"pages":[
+								"api-reference/ask/templates/get-templates",
+								"api-reference/ask/templates/post-create-template",
+								"api-reference/ask/templates/get-template",
+								"api-reference/ask/templates/delete-template",
+								"api-reference/ask/templates/update-template"
+							]
+						},
+						{
+							"group":"Conversations",
+							"pages":[
+								"api-reference/ask/conversations/list-previous-conversations",
+								"api-reference/ask/conversations/create-new-conversation",
+								"api-reference/ask/conversations/get-conversation-data",
+								"api-reference/ask/conversations/delete-conversation-history",
+								"api-reference/ask/conversations/edit-conversation-data"
+							]
+						}
+					]
+				},
+				{
+					"group":"Assets",
+					"pages":[
+						{
+							"group":"LLMs",
+							"pages":[
+								"api-reference/users/llms/get-llm-configs",
+								"api-reference/users/llms/post-create-llm-config",
+								"api-reference/users/llms/get-llm-config",
+								"api-reference/users/llms/delete-llm-config",
+								"api-reference/users/llms/update-llm-config"
+							]
+						},
+						{
+							"group":"User",
+							"pages":[
+								"api-reference/users/me/get-account-information"
+							]
+						},
+						{
+							"group":"Agents",
+							"pages":[
+								"api-reference/users/agents/get-execution-layers",
+								"api-reference/users/agents/post-create-execution-layer",
+								"api-reference/users/agents/get-execution-layer",
+								"api-reference/users/agents/delete-execution-layer",
+								"api-reference/users/agents/update-execution-layer",
+								"api-reference/users/agents/get-agents",
+								"api-reference/users/agents/post-create-agent",
+								"api-reference/users/agents/get-agent",
+								"api-reference/users/agents/delete-agent",
+								"api-reference/users/agents/update-agent"
+							]
+						},
+						{
+							"group":"Guardrails",
+							"pages":[
+								"api-reference/users/guard-rails/get-guard-rails",
+								"api-reference/users/guard-rails/post-create-guard-rail",
+								"api-reference/users/guard-rails/get-guard-rail",
+								"api-reference/users/guard-rails/delete-guard-rail",
+								"api-reference/users/guard-rails/patch-guard-rail"
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"footerSocials":{
+		"linkedin":"https://www.linkedin.com/company/bynesoftai"
+	},
+	"openapi":[
+		"https://app.docs.bynesoft.com/api/knowledge-base/openapi.json",
+		"https://app.docs.bynesoft.com/api/ask/openapi.json",
+		"https://app.docs.bynesoft.com/api/users/openapi.json",
+		"https://app.docs.bynesoft.com/api/connectors/openapi.json"
+	],
+	"analytics":{
+		"ga4":{
+			"measurementId":"G-JTWFR4GNPE"
+		}
+	}
 }
