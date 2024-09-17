@@ -1,25 +1,58 @@
 ---
-title: 'Agents'
-description: 'Use Agents to enable an LLM to use tools'
+title: 'Simple Agent'
+
+description: 'Learn how to create intelligent agents that can interact with external data sources'
+
 ---
 
-## What's in this guide
+## Introduction to Agents
 
-In this guide, we will go through a slightly more advanced use case, building an Agent application with function-calling.
-Function calling is a very useful capability in many latest-gen LLMs, allowing the model to pick what kind of tools it needs to deliver a particular result and then leverage these tools. 
+Agents are a powerful concept in AI that allows Language Models (LLMs) to interact with external tools and data sources. Unlike traditional LLMs that are limited to their training data, agents can access real-time information, perform actions, and make decisions based on up-to-date data.
 
-We also support prompt-enforced function calls for older models, but you may need to speak with our migration team about implementing this functionality. 
+In this guide, we'll explore how to create a simple agent using Bynesoft's API. This agent will be capable of searching Wikipedia to retrieve relevant information for answering user queries. This guide serves as an introduction to more advanced concepts like Retrieval-Augmented Generation (RAG), which we'll cover in subsequent guides.
 
-Here, we will build a simple Agent that's capable of going to Wikipedia to retrieve relevant data for producing an answer. Our Agents come in two forms: the restricted Google Agent
-and a free-form API Caller. With Google Agent, you can enable the LLM to do Google Search, and the free-form enables requests to arbitrary APIs.
+Our Agents come in three forms: the restricted Google Agent, free-form API Caller and the RAG agent. With Google Agent, you can enable the LLM to do Google Search, and the free-form enables requests to arbitrary APIs. RAG Agent is covered in the subsequent guide.
+
+## Why Use Agents?
+
+Agents offer several advantages over traditional LLMs:
+
+1. **Access to external data**: Agents can retrieve up-to-date information from various sources.
+2. **Ability to perform actions**: They can interact with APIs, databases, and other tools.
+3. **Dynamic responses**: Agents can provide more accurate and timely answers based on current information.
+4. **Extensibility**: You can add new capabilities to agents by integrating additional tools and data sources.
+
+## Key Concepts
+
+Before we dive into building our agent, let's understand some key concepts:
+
+1. **Execution Layer**: Defines the tools and actions available to the agent.
+2. **Template (System Prompt)**: Guides the agent's behavior and decision-making process.
+3. **Function Calling**: Allows the agent to use external tools or APIs to accomplish tasks.
+
+## What's in this Guide
+
+In this guide, we will:
+
+1. Create an execution layer for Wikipedia searches
+2. Define a template to guide the agent's behavior
+3. Build an agent that combines the execution layer and template
+4. Test the agent with a sample query
 
 This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/1vXdyamZ1gmVcZGLF2WKUHNw8OB5xa0es?usp=sharing).
 
-### Define the execution layer
-An execution layer is likely the most important part of an Agent. It specifies the schema for the function call, intercepts it, and executes it.
-We will create a Google execution layer restricted to Wikipedia:
+## Prerequisites
 
-```python main.py
+- A Bynesoft API key
+- Python environment with the `requests` library installed
+
+## Creating an Agent
+
+### Step 1: Define the Execution Layer
+
+The execution layer is a crucial component of an agent. It specifies the schema for function calls, intercepts them, and executes them. In this example, we'll create a Google execution layer restricted to Wikipedia searches:
+
+```python
 import requests
 
 KEY = 'YOUR_BYNE_KEY'
@@ -28,11 +61,11 @@ headers = {
 }
 
 exec_layer = {
-  "name": "WikiSearch", # Name of the layer
+  "name": "WikiSearch",
   "description": "Find data from Wikipedia.",
   "sourceFabric": {
-    "config": {"siteFilter":['wikipedia.org']}, # Choose the scope
-    "name": "googleSearch" # Pick the right constructor for the execution layer
+    "config": {"siteFilter":['wikipedia.org']},
+    "name": "googleSearch"
   }
 }
 
@@ -40,13 +73,12 @@ exec_layer_obj = requests.post('https://app.docs.bynesoft.com/api/users/agents/e
 exec_layer_id = exec_layer_obj['id']
 ```
 
-### Create a template
-Templates (also called system commands or system prompts) guide the general behavior of the model. They are particularly
-important for Agents as they provide the context explaining when to execute the function call.
-
-```python main.py
+This execution layer allows our agent to perform Google searches specifically on Wikipedia.
+### Step 2: Create a Template
+Templates, also known as system prompts, guide the general behavior of the agent. They provide context on when and how to use the available functions:
+```python
 template = {
-  "template": "You should help users find information. You may call a function to get Wikipedia data. Always use it to make sure you provide relevant advice.",
+  "template": "You are an assistant that helps users find information. You should use the Wikipedia search function to ensure you provide relevant and accurate information. Always cite your sources.",
   "name": "WikiAssistant",
   "type": "llm"
 }
@@ -54,14 +86,13 @@ template = {
 template_obj = requests.post('https://app.docs.bynesoft.com/api/ask/templates', json=template, headers=headers).json()
 template_id = template_obj['id']
 ```
-
-### Build an Agent
-Now, having created a Template and an Execution Layer, we can combine them to create an Agent.
-
-```python main.py
+This template instructs the agent to use the Wikipedia search function and cite sources.
+### Step 3: Build the Agent
+Now that we have created a Template and an Execution Layer, we can combine them to create our Agent:
+```python
 agent = {
   "name": "WikiAssistant",
-  "description": "An Agent that can search Wiki.",
+  "description": "An Agent that can search Wikipedia for information.",
   "templateId": template_id,
   "exeLayers": [
     exec_layer_id
@@ -69,18 +100,16 @@ agent = {
   "modelType": "GPT-4o"
 }
 
-
 agent_obj = requests.post('https://app.docs.bynesoft.com/api/users/agents', json=agent, headers=headers).json()
 agent_id = agent_obj['id']
 ```
+This step combines the execution layer and template into a functional agent.
 
-### Generate!
-
-Agents have their own generative endpoint, which is slightly different from RAG. 
-
-```python main.py
+### Using the Agent
+Now that we've created our agent, let's test it with a sample query:
+```python
 params = {
-    "q": "Where do polar bears live",
+    "q": "Where do polar bears live?",
     "withReference": True
 }
 
@@ -89,18 +118,35 @@ uri = f'https://dev.docs.bynesoft.com/api/ask/agents/{agent_id}/query'
 body = {}
 
 resp = requests.post(uri, json=body, headers=headers, params=params).json()
-resp
+print(resp)
+```
+This will return a response from the agent, including the answer and the source of the information.
+
+### Understanding the Output
+The agent's response will typically include:
+
+- The answer to the query
+- References to the sources used (in this case, Wikipedia URLs)
+- A unique query ID and conversation ID for tracking purposes
+
+Here's an example of what the output might look like:
+```json
+{
+  'response': {
+    'answer': 'Polar bears inhabit the Arctic and adjacent areas, including Greenland, Canada, Alaska, Russia, and the Svalbard Archipelago of Norway.',
+    'reference': [
+      {
+        'exeLayer': '3f1bd462-b6d8-433e-a0d8-c854f441923a',
+        'source': 'https://en.wikipedia.org/wiki/Polar_bear'
+      }
+    ]
+  },
+  'queryId': '6b69ba62-4894-4bbb-bd82-a062e2fcc981',
+  'conversationId': '05306183-ae0b-4369-9ec2-dcd12750e428'
+}
 ```
 
-The output should be something like this: 
-
-```json output.json
-{'response': {'answer': 'Polar bears inhabit the Arctic and adjacent areas, including Greenland, Canada, Alaska, Russia, and the Svalbard Archipelago of Norway.',
-  'reference': [{'exeLayer': '3f1bd462-b6d8-433e-a0d8-c854f441923a',
-    'source': 'https://en.wikipedia.org/wiki/Polar_bear'}]},
- 'queryId': '6b69ba62-4894-4bbb-bd82-a062e2fcc981',
- 'conversationId': '05306183-ae0b-4369-9ec2-dcd12750e428'}
-```
-
-You are invited to explore our API reference to explore more advanced execution layers that can connect to free-form APIs
-and enable Agents that can interact with company data or industry-specific sources.
+## Next Steps
+This introduction to agents sets the foundation for more advanced applications, such as Retrieval-Augmented Generation (RAG) systems. In the next guide, we'll explore how to build upon this concept to create more sophisticated knowledge management tools that can interact with your own document repositories.
+You can explore our API reference to discover more advanced execution layers that can connect to free-form APIs, enabling agents to interact with company data or industry-specific sources.
+By mastering agents, you'll be able to create AI systems that are more dynamic, knowledgeable, and capable of handling a wide range of tasks with up-to-date information.

@@ -1,52 +1,71 @@
 ---
 title: 'Guardrails'
-description: 'Make your LLM product safer'
+description: 'Learn how to implement guardrails to make your LLM applications safer'
 ---
 
+## Introduction to Guardrails
+
+Guardrails are an essential component of any customer-facing LLM system. They enable you to automate monitoring of the LLM inputs and outputs, ensuring that your AI applications remain safe, ethical, and aligned with your specific use case.
+
+In this guide, we'll explore how to implement guardrails using Bynesoft's API. We'll create a simple guardrail that prevents users from discussing political topics with the model. This guide builds upon the concepts introduced in the previous Agents and RAG guides.
+
+## Why Use Guardrails?
+
+Guardrails offer several benefits for LLM applications:
+
+1. **Safety**: Prevent the model from producing undesirable or harmful content.
+2. **Compliance**: Ensure your AI system adheres to legal and ethical guidelines.
+3. **Consistency**: Maintain a consistent user experience by filtering out off-topic queries.
+4. **Hallucination prevention**: Reduce the likelihood of the model generating false or misleading information.
+5. **Customization**: Tailor the model's behavior to your specific use case and audience.
+
 ## Prerequisites
-You need an Agent attached to your account. Follow this [Guide](/Agents) to build a simple Wiki Search Agent.
+
+- Completion of the [Agents](/Agents) guide
+- A Bynesoft API key
+- Python environment with the `requests` and `pandas` libraries installed
 
 ## What's in this Guide
-Guardrails are an essential component of any customer-facing LLM system. They enable you to automate monitoring of the LLM inputs or output.
-With Guardrails you can be sure that a user doesn't get the model to produce undesirable writing. They may also be used to avoid hallucinations, validate model-generated links and for many other applications in AI safety.
 
-In this Guide we will create a simple Guardrail that prevents a user from speaking to the model about politics.
-This Guide is also available as a [Colab workbook](https://colab.research.google.com/drive/1nLSkc_eR8wYQbfwICMFhfqrsBf4CT70C?usp=sharing).
+In this guide, we will:
 
-### Creating a knowledge base of forbidden prompts
-Prompt Injection detector uses a special kind of KB, a tech KB that ingests data from Parquet and CSV files. 
-Files with banned prompts can have an arbitrary structure; the only important thing is that each row must contain a prompt. The code below is very similar to creating a usual KB, with the only difference being that we create a tech KB.
-To create a knowledge base, we first need our auth headers.
+1. Create a knowledge base for storing forbidden prompts
+2. Generate example banned phrases
+3. Ingest the banned phrases into the knowledge base
+4. Create and attach a guardrail to an existing agent
+5. Test the guardrail with different queries
 
-```python main.py
+This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/1nLSkc_eR8wYQbfwICMFhfqrsBf4CT70C?usp=sharing).
+
+## Implementing Guardrails
+
+### Step 1: Create a Knowledge Base for Forbidden Prompts
+
+First, we'll create a special "tech" knowledge base to store our banned prompts:
+
+```python
 import requests
 
 KEY = 'YOUR_BYNE_KEY'
-
 headers = {
     'X-API-Key': KEY
 }
 
-# YOU NEED AN AGENT AND A KB CREATED IN THE AGENTS GUIDE.  
-AGENT_ID = 'ed8b8e42-1570-4f97-ab2c-fc14df827c6a'
-KB_ID = '3d47deca-bcc0-41f5-ae7b-358e4f478cfd'
+# You need an Agent ID from the previous Agents guide
+AGENT_ID = 'YOUR_AGENT_ID'
 
-# We create a new KB 
+# Create a new knowledge base for guardrails
 knowledge_base_obj = requests.post('https://app.docs.bynesoft.com/api/knowledge-base/', headers=headers, json={
     "name": "_guardrails_KB",
     "type": "tech"
   }).json()
 
-_knowledge_base_id = knowledge_base_obj['id']
+knowledge_base_id = knowledge_base_obj['id']
 ```
-If you'd like a recap on how KBs work, please feel free to check out the [RAG](/RAG) Guide!
 
-### Creating examples
-
-We will need a few examples of banned prompts to teach the system. Since we are looking to moderate
-politics-related content, we use relevant phrases as examples.
-
-```python main.py
+### Step 2: Generate Example Banned Phrases
+We'll create a CSV file containing examples of banned political phrases:
+```python
 import pandas as pd
 
 phrases = ["Who should I vote for in the election?",
@@ -59,77 +78,59 @@ df = pd.DataFrame(data={
     'phrases': phrases
 })
 
-df.to_csv(document_name)
+df.to_csv(document_name, index=False)
 ```
 
-This code creates the following CSV file for us:
-
-```csv banned_list.csv
-,phrases
-0,Who should I vote for in the election?
-1,Who will be the next US president?
-2,Tell me about the 2024 General Election in the UK.
-```
-
-### Ingest the file
-
-File ingestion follows the same process as for a regular PDF or DOCX with a RAG Knowledge Base.
-
-```python main.py
+### Step 3: Ingest Banned Phrases into the Knowledge Base
+Now, we'll upload and process the CSV file containing our banned phrases:
+```python
 import json
 
 mime_headers = {
     "Content-Type": "text/csv"
 }
 
+# Get upload link
 link = requests.get('https://app.docs.bynesoft.com/api/connectors/local/s3-upload-links',
                    headers=headers,
                    params={
-                       'kb': _knowledge_base_id,
+                       'kb': knowledge_base_id,
                        'fileName': [document_name]
                    })
 
 link_uri = link.json()[document_name]
 
-
+# Upload file
 upload = requests.put(link_uri,
                       data=open(document_name, 'rb'),
                       headers=mime_headers)
 
-job_id = requests.get('https://app.docs.bynesoft.com/api/connectors/job-id',
-                    headers=headers,
-                    params={
-                        'kb': _knowledge_base_id,
-                        'connector': 'local'
-                    }).json()
+# Create and trigger processing job
+job_id = requests.post(f'https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs',
+                    headers=headers).json()
 
-processing = requests.post(f'https://app.docs.bynesoft.com/api/connectors/local/trigger-process?kb={_knowledge_base_id}',
+processing = requests.put(f'https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs/{job_id}',
              headers=headers,
-             params={
-                'kb': _knowledge_base_id
-             },
-             data = json.dumps({
-                "jobId": job_id,
+             data = json.dumps([{
                 "fileName": document_name,
-                "lastModified": "Wed Jul 3 2024"
-       }))
+                "lastModified": "Wed Jul 3 2024",
+                "connector": "local"
+       }]))
 
-status_review = f'https://app.docs.bynesoft.com/api/knowledge-base/{_knowledge_base_id}/job/{job_id}/status'
+trigger_status = requests.post(f'https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs/{job_id}/trigger',
+             headers=headers)
 ```
-
-### Guardrail
-
-Create the guardrail and attach it to the Agent. The simplest part:-)
-
-```python main.py
+### Step 4: Create and Attach a Guardrail
+Now, we'll create a guardrail and attach it to our existing agent:
+```python
 guardrail_spec = {
   "name": "PoliticalQuery",
   "description": "Forbids the user from asking the model to generate writing on political topics.",
   "sourceFabric": {
     "name": "promptInjectionValidator",
     "config": {
-      "kb": _knowledge_base_id,
-      "cosineSimilarityScore": 0.8
+      "kb": knowledge_base_id,
+      "cosineSimilarityScoreThreshold": 0.8
     }
   },
   "responseBlocking": True
@@ -138,6 +139,7 @@ guardrail_spec = {
 gr_obj = requests.post('https://app.docs.bynesoft.com/api/users/guard-rails', json=guardrail_spec, headers=headers).json()
 gr_id = gr_obj['id']
 
+# Attach guardrail to the agent
 requests.patch(f'https://app.docs.bynesoft.com/api/users/agents/{AGENT_ID}', json={
   "guardRails": [
     gr_id
@@ -145,14 +147,12 @@ requests.patch(f'https://app.docs.bynesoft.com/api/users/agents/{AGENT_ID}', jso
 }, headers=headers).json()
 ```
 
-
-### Let's test!
-
-Now, we can compare two different requests and see the outcome.
-
-```python main.py
+### Testing the Guardrail
+Let's test our guardrail with two different queries:
+#### Allowed Query
+```python
 params = {
-    "q": "Where do polar bears live",
+    "q": "Where do polar bears live?",
     "withReference": True
 }
 
@@ -161,23 +161,14 @@ uri = f'https://app.docs.bynesoft.com/api/ask/agents/{AGENT_ID}/query'
 body = {}
 
 resp = requests.post(uri, json=body, headers=headers, params=params).json()
+print(resp)
 ```
 
-```json output.json
-{'queryId': '6898727e-95d1-4e55-ab54-c98cb8cf7023',
- 'conversationId': 'b1086b4a-6862-4689-ad10-171bfb1f16d7',
- 'response': {'answer': 'Projected changes (based on 10 IPCC AR-4 GCM models run with the SRES- A1B forcing scenario) in the spatial distribution and integrated annual area of optimal polar bear habitat. Base map shows the cumulative number of months.',
-  'reference': [{'exeLayer': '311f323d-21e0-47b0-944c-2e2c4d05ebd6',
-    'source': 'https://en.m.wikipedia.org/wiki/File:Polar_Bear_Habitat.png'}]}}
-```
-The request is entirely innocent. As planned, the Agent is executed and returns the answer.
-
-Now, let's see if it catches a forbidden request.
-
-```python main.py
+This query should be allowed and return a normal response.
+#### Blocked Query
+```python
 params = {
-    "q": "What do you think about the 2024 US Presidential Election Candidates?",
-    "withReference": True
+    "q": 'What do you think about the 2024 US Presidential Election Candidates?',
 }
 
 uri = f'https://app.docs.bynesoft.com/api/ask/agents/{AGENT_ID}/query'
@@ -185,16 +176,29 @@ uri = f'https://app.docs.bynesoft.com/api/ask/agents/{AGENT_ID}/query'
 body = {}
 
 resp = requests.post(uri, json=body, headers=headers, params=params).json()
+print(resp)
 ```
+This query should be blocked by our guardrail, and you'll receive a response indicating that the guardrail was triggered.
 
-```json output.json
-{'queryId': '1b7dc068-acb5-452e-bc12-f571ca1eed68',
- 'conversationId': '3c3b2eda-e392-4235-81e3-22bf804abe26',
- 'triggeredGuardRails': [{'id': 'e918a92a-7457-4156-8f00-ec9e79ab2a9d',
-   'level': 'ERROR',
-   'content': {'triggerSource': 'What do you think about the 2024 US Presidential Election Candidates?',
-    'message': 'Prompt injection detected'}}]}
+### Understanding the Output
+When a guardrail is triggered, the response will include a triggeredGuardRails field with details about the violation:
+```json
+{
+  'queryId': '1b7dc068-acb5-452e-bc12-f571ca1eed68',
+  'conversationId': '3c3b2eda-e392-4235-81e3-22bf804abe26',
+  'triggeredGuardRails': [{
+    'id': 'e918a92a-7457-4156-8f00-ec9e79ab2a9d',
+    'level': 'ERROR',
+    'content': {
+      'triggerSource': 'What do you think about the 2024 US Presidential Election Candidates?',
+      'message': 'Prompt injection detected'
+    }
+  }]
+}
 ```
+This output indicates that the guardrail successfully blocked the political query.
 
-Voila! The content was moderated correctly. Please feel free to explore more guardrailing options in the [Guardrails API Reference](/api-reference/users/guard-rails).
-
+## Conclusion
+In this guide, we've learned how to implement guardrails to enhance the safety and reliability of your LLM applications. By creating a knowledge base of forbidden prompts and attaching a guardrail to your agent, you can effectively filter out unwanted queries and ensure your AI system behaves according to your specifications.
+Guardrails are a powerful tool for maintaining control over your AI applications, and they can be customized to suit a wide range of use cases beyond political content moderation. As you continue to develop your AI systems, consider implementing guardrails to address specific safety, ethical, or compliance requirements for your application.
+For more advanced guardrailing options, explore the API Reference.

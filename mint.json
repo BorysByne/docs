@@ -56,8 +56,8 @@
 				{
 					"group":"Guides",
 					"pages":[
-						"RAG",
 						"Agents",
+						"RAG",
 						"Guardrails"
 					]
 				}

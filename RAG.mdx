@@ -1,156 +1,197 @@
 ---
-title: 'RAG'
-description: 'Build your first knowledge management tool'
+title: 'RAG Agent'
+
+description: 'Learn how to create a knowledge base and query it using LLMs with an agent-based approach'
+
 ---
+## Introduction
+In this guide, we'll walk through the process of building an Agentic RAG (Retrieval-Augmented Generation) system using Bynesoft's API. Unlike traditional RAG pipelines, we'll be creating a RAG Agent that can intelligently interact with a knowledge base. This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/18m02wxUkS7_oqF0q4FQlHZPgRcu2J-Ry?usp=sharing).
 
-## What's in this guide
+### What is Agentic RAG?
+Agentic RAG combines the power of RAG with the flexibility and intelligence of AI agents. In a traditional RAG system, the process of retrieving information and generating responses is relatively straightforward. With Agentic RAG, we introduce an intelligent agent that can:
+1. Interpret user queries more effectively
+2. Decide how to best search the knowledge base
+3. Combine information from multiple sources
+4. Ask follow-up questions when needed
+5. Provide more contextually relevant and accurate responses
 
-In this guide, we will go through LLMs' simplest and most common use case, building a knowledge management tool. 
-This guide is also available as a [Colab workbook](https://colab.research.google.com/drive/18m02wxUkS7_oqF0q4FQlHZPgRcu2J-Ry?usp=sharing).
+### Why Choose RAG Agents over Simple RAG?
 
-### Creating a knowledge base
-"Byne" works around the concept of a "knowledge base". A "knowledge base" can be a collection of materials publicly accessible to all your end users or individual customers or any other collection of documents belonging to each one of your end customers or shared between them.
-When you start using the service, you create a knowledge base and add documents to the KB. We automatically parse the records and keep track of them. Then, when you need to generate some writing based on the documents, you can query the generative endpoint, which leverages the entire knowledge base or a subset of it belonging to a particular user to produce writing. We support hand-written and scanned PDFs in English, Spanish, Italian, Portuguese, French, German, textual PDF, and DOCX documents in all languages supported by your LLM.
+RAG Agents offer several advantages over simple RAG pipelines:
+1. **Improved context understanding**: Agents can maintain context over multiple interactions, leading to more coherent and relevant responses.
+2. **Dynamic query refinement**: Agents can reformulate queries based on initial results, improving retrieval accuracy.
+3. **Multi-step reasoning**: Complex queries that require information from multiple documents can be handled more effectively.
+4. **Customizable behavior**: Agents can be fine-tuned to follow specific guidelines or exhibit particular traits, making them more adaptable to various use cases.
+5. **Interactive clarification**: When information is ambiguous or insufficient, agents can ask users for clarification, leading to better results.  By building a RAG Agent, we're creating a more intelligent and flexible system that can handle a wider range of tasks and provide more valuable insights from your knowledge base.
 
-To create a knowledge base, we first need our auth headers.
+## Prerequisites
+- A Bynesoft API key
+- Python environment with the `requests` library installed
 
-```python main.py
+## Creating a Knowledge Base
+First, we need to set up our authentication headers using our Bynesoft API key.
+```python
 import requests
 
-KEY = 'YOUR_BYNE_KEY'
-
+KEY = 'API_KEY'
 headers = {
     'X-API-Key': KEY
 }
 ```
-Now, we can create the KB. It's important to specify chunk size and overlap. By default, the chunk size is 800 tokens, and the chunk overlap is 400 tokens.
-This means that the uploaded document will be broken down into paragraphs of at most 800 tokens, with a 400-token overlap between them.
+Now, let's create a knowledge base:
+```python
+knowledge_base_obj = requests.post(
+    "https://app.docs.bynesoft.com/api/knowledge-base/",
+    headers=headers,
+    json={
+        "name": "myKB_1",
+        "type": "query",
+        "paragraphs": {"chunkSize": 400, "chunkOverlap": 200},
+    },
+).json()
 
-```python main.py
-knowledge_base_obj = requests.post('https://app.docs.bynesoft.com/api/knowledge-base/', headers=headers, json={
-    "name": "myKB",
-    "type": "query",
-    "paragraphs": {
-      "chunkSize": 400,
-      "chunkOverlap": 200
-    }
-  }).json()
-
-knowledge_base_id = knowledge_base_obj['id']
-```
-This command creates a new KB with a chunk size of 400 tokens, and 200 tokens overlap.
-The output should look something like this:
-
-```json output.json
-{'id': 'e0193a78-1de8-4a19-8d4d-306e1c2e8f11',
- 'name': 'myKB',
- 'type': 'query',
- 'paragraphs': {'chunkSize': 400, 'chunkOverlap': 200},
- 'dateCreated': '2024-07-03T13:39:53.895471+00:00'}
+knowledge_base_id = knowledge_base_obj["id"]
 ```
 
-### Ingesting a document
+This creates a knowledge base with a chunk size of 400 tokens and an overlap of 200 tokens. The response will include the knowledge base ID, which we'll use in subsequent steps.
 
-To add a document to the KB, we first need to create a secure upload link. In the cloud deployment, the default channel for uploading documents is AWS S3. 
-When you migrate the environment onto your infrastructure, it will be a different provider, but the API will remain largely the same.
+## Ingesting Documents
 
-In this guide, we will be using a report from NVIDIA called ["How On-Premises Deployment Can Overcome Six Critical AI Challenges"](https://www.supermicro.com/thought-leadership/Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf).
+To add documents to our knowledge base, we'll follow these steps:
+1. Obtain an upload link
+2. Upload the document
+3. Create a job for processing
+4. Trigger the processing
 
-```python main.py
-document_name = 'Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf'
-document_path = 'Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf'
-
-link = requests.get('https://app.docs.bynesoft.com/api/connectors/local/s3-upload-links',
-                   headers=headers,
-                   params={
-                       'kb': knowledge_base_id,
-                       'fileName': [document_name]
-                   })
-
+### Step 1: Obtain an Upload Link
+```python
+document_name = "Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf"
+document_path = "Critical-AI-Challenges-30105-Nvidia-Supermicro.pdf"
+link = requests.get(
+    "https://app.docs.bynesoft.com/api/connectors/local/s3-upload-links",
+    headers=headers,
+    params={"kb": knowledge_base_id, "fileName": [document_name]},
+)
 link_uri = link.json()[document_name]
 ```
 
-Now, we may upload the document into the processing storage. Don't forget to specify the correct MIME to avoid errors!
-
-```python main.py
-mime_headers = {
-    "Content-Type": "application/pdf"
-}
-
-upload = requests.put(link_uri,
-                      data=open(document_path, 'rb'),
-                      headers=mime_headers)
+### Step 2: Upload the Document
+```python
+mime_headers = {"Content-Type": "application/pdf"}
+upload = requests.put(link_uri, data=open(document_path, "rb"), headers=mime_headers)
 ```
 
-### Launch processing
-
-To launch processing, you need to create a Job. It's simply a queue of files submitted for processing.
-
-```python main.py
-job_id = requests.get('https://app.docs.bynesoft.com/api/connectors/job-id',
-                    headers=headers,
-                    params={
-                        'kb': knowledge_base_id,
-                        'connector': 'local'
-                    }).json()
+### Step 3: Create a Job for Processing
+```python
+job_id = requests.post(
+    f"https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs",
+    headers=headers,
+).json()
 ```
 
-Once the Job has been created, you can add the uploaded file to it. All files in a Job are immediately picked up for processing.
+### Step 4: Trigger the Processing
+```python
+import json
 
-```python main.py
-import json 
-
-processing = requests.post(f'https://app.docs.bynesoft.com/api/connectors/local/trigger-process?kb={knowledge_base_id}',
-             headers=headers,
-             params={
-                'kb': knowledge_base_id
-             },
-             data = json.dumps({
-                "jobId": job_id,
+processing = requests.put(
+    f"https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs/{job_id}",
+    headers=headers,
+    data=json.dumps(
+        [
+            {
                 "fileName": document_name,
-                "lastModified": "Wed Jul 10 2024"
-       }))
+                "lastModified": "Wed Jul 3 2024",
+                "connector": "local",
+            }
+        ]
+    ),
+)
+trigger_status = requests.post(
+    f"https://app.docs.bynesoft.com/api/knowledge-base/{knowledge_base_id}/jobs/{job_id}/trigger",
+    headers=headers,
+)
 ```
 
-The output should look like this:
+## Creating a RAG Agent
+To implement our Agentic RAG system, we'll create an agent with an execution layer and a prompt template. This agent will be responsible for intelligently querying our knowledge base and providing contextual responses.
+### Step 1: Create an Execution Layer
+```python
+exe_layer = requests.post(
+    f"https://app.docs.bynesoft.com/api/users/execution-layers",
+    headers=headers,
+    data=json.dumps(
+        {
+            "name": "kb_exec",
+            "description": "Searches a knowledge base",
+            "sourceFabric": {
+                "name": "knowledgeBase",
+                "config": {
+                    "kbId": knowledge_base_id,
+                    "searchOptions": {
+                        "hybrid": {"enabled": "false", "keywords": []},
+                        "cosineSimilarityScoreThreshold": 0.8,
+                        "fileIdsFilter": [],
+                    },
+                },
+            },
+        }
+    ),
+)
+exe_layer_id = exe_layer.json()["id"]
 
-```json output.json
-{'fileIndex': 'local_d9c3bf0a-b9b0-47f6-bc13-9d22f48ed2a7'}
 ```
-
-### Generate!
-
-You can now generate writing or let the user chat to their KB by calling the generative endpoints.
-
-```python main.py
-resp = requests.post(f'https://app.docs.bynesoft.com/api/ask/query',
-             headers=headers,
-             params={
-                'kb': knowledge_base_id,
-                 'q': 'What are the benefits of running AI on-premise?',
-                 'withReference': True
-             },
-             data = "{}"
-            ).json()
+### Step 2: Create a Prompt Template
+```python
+prompt = "You are a helpful assistant. Your job is to search files using the function kb_exec and help the user based on the data you find."
+template = requests.post(
+    f"https://app.docs.bynesoft.com/api/ask/templates",
+    headers=headers,
+    data=json.dumps({"name": "kb_prompt", "type": "llm", "template": prompt}),
+)
+template_id = template.json()["id"]
 ```
+### Step 3: Create the RAG Agent
+```python
+agent = requests.post(
+    f"https://app.docs.bynesoft.com/api/users/agents",
+    headers=headers,
+    data=json.dumps(
+        {
+            "name": "kb_agent",
+            "templateId": template_id,
+            "description": "Searches a knowledge base",
+            "exeLayers": [exe_layer_id],
+        }
+    ),
+)
+agent_id = agent.json()["id"]
 
-```json output.json
-{'response': [{'answer': 'Running AI on-premise can allow organizations to use sensitive or proprietary data that must remain on-premises for regulatory or competitive purposes.',
-   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
-    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
-  {'answer': 'On-premise AI can be cost-effective when cloud costs, especially for moving large quantities of data, rise to unacceptable levels as AI processing needs increase.',
-   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
-    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
-  {'answer': 'Organizations may need specific configurations of AI hardware that are not available from cloud providers or for which performance cannot be assessed and assured beforehand, making on-premise deployment beneficial.',
-   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
-    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}},
-  {'answer': 'Enterprise-grade support is needed to supplement an organization's own staff and expertise when deploying AI on-premise.',
-   'reference': {'file': 'local_1d8e2419-d302-4e76-acf7-74dc08765bab',
-    'paragraph': '64d9f60c-7837-40a3-8278-ec7dfc139fff'}}],
- 'queryId': '53b70db7-57c9-4e8c-a906-0bbdb65a2e78',
- 'conversationId': '13fad5f8-bc8c-4ab3-a05a-1398b51f5d2a'}
 ```
+## Querying the Knowledge Base with the RAG Agent
+Now that we have our RAG Agent set up, we can query our knowledge base:
+```python
+agent_resp = requests.post(
+    f"https://app.docs.bynesoft.com/api/ask/agents/{agent_id}/query",
+    headers=headers,
+    data=json.dumps({}),
+    params={"q": "What is the rationale for running LLMs on-prem?"},
+)
+response = agent_resp.json()
+print(response)
+```
+This will return a response from the RAG Agent based on the information in your knowledge base. The agent will intelligently search for relevant information, combine insights from multiple sources if necessary, and provide a comprehensive answer to the query.
 
-We support many features for generation, including references to the original document, hybrid search, and system commands. 
-Please have a look at the API Reference for more details!
+## Conclusion
+In this guide, we've walked through the process of creating an Agentic RAG system using Bynesoft's API. We've covered:
+1. Creating a knowledge base
+2. Ingesting documents
+3. Creating a RAG Agent with an execution layer and prompt template
+4. Querying the knowledge base using the intelligent agent
 
+This Agentic RAG setup allows you to build more powerful and flexible applications compared to traditional RAG pipelines. The RAG Agent can handle complex queries, maintain context over multiple interactions, and provide more accurate and contextually relevant responses.  You can expand on this foundation to create sophisticated applications such as:
+- Intelligent chatbots that can engage in multi-turn conversations about your documents
+- Advanced document analysis tools that can draw insights from multiple sources
+- Automated research assistants that can handle complex, multi-step queries
+- Interactive knowledge exploration systems that can guide users through large document collections
+
+By leveraging the power of Agentic RAG, you're creating a more dynamic and adaptable system that can provide greater value from your knowledge base.
