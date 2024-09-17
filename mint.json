@@ -162,11 +162,11 @@
 						{
 							"group":"Agents",
 							"pages":[
-							  "api-reference/users/agents/get-agents",
-							  "api-reference/users/agents/post-create-agent",
-							  "api-reference/users/agents/get-agent",
-							  "api-reference/users/agents/delete-agent",
-							  "api-reference/users/agents/update-agent"
+								"api-reference/users/agents/get-agents",
+								"api-reference/users/agents/post-create-agent",
+								"api-reference/users/agents/get-agent",
+								"api-reference/users/agents/delete-agent",
+								"api-reference/users/agents/update-agent"
 							]
 						},
 						{
@@ -179,17 +179,16 @@
 								"api-reference/users/guard-rails/patch-guard-rail"
 							]
 						},
-						 {
-							"group": "Execution layers",
-							"pages": [
-							  "api-reference/users/execution-layers/get-execution-layers",
-							  "api-reference/users/execution-layers/post-create-execution-layer",
-							  "api-reference/users/execution-layers/get-execution-layer",
-							  "api-reference/users/execution-layers/delete-execution-layer",
-							  "api-reference/users/execution-layers/update-execution-layer"
+						{
+							"group":"Execution layers",
+							"pages":[
+								"api-reference/users/execution-layers/get-execution-layers",
+								"api-reference/users/execution-layers/post-create-execution-layer",
+								"api-reference/users/execution-layers/get-execution-layer",
+								"api-reference/users/execution-layers/delete-execution-layer",
+								"api-reference/users/execution-layers/update-execution-layer"
 							]
-						  }
-
+						}
 					]
 				}
 			]
