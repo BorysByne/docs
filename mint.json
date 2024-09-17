@@ -114,9 +114,8 @@
 						{
 							"group":"Generate",
 							"pages":[
-								"api-reference/ask/general/query-documents-with-machine-readable-output",
-								"api-reference/ask/general/retrieve-top-query-related-documents",
-								"api-reference/ask/general/query-agents"
+								"api-reference/ask/general/query-agents",
+								"api-reference/ask/general/retrieve-top-query-related-documents"
 							]
 						},
 						{
@@ -163,16 +162,11 @@
 						{
 							"group":"Agents",
 							"pages":[
-								"api-reference/users/agents/get-execution-layers",
-								"api-reference/users/agents/post-create-execution-layer",
-								"api-reference/users/agents/get-execution-layer",
-								"api-reference/users/agents/delete-execution-layer",
-								"api-reference/users/agents/update-execution-layer",
-								"api-reference/users/agents/get-agents",
-								"api-reference/users/agents/post-create-agent",
-								"api-reference/users/agents/get-agent",
-								"api-reference/users/agents/delete-agent",
-								"api-reference/users/agents/update-agent"
+							  "api-reference/users/agents/get-agents",
+							  "api-reference/users/agents/post-create-agent",
+							  "api-reference/users/agents/get-agent",
+							  "api-reference/users/agents/delete-agent",
+							  "api-reference/users/agents/update-agent"
 							]
 						},
 						{
@@ -184,7 +178,18 @@
 								"api-reference/users/guard-rails/delete-guard-rail",
 								"api-reference/users/guard-rails/patch-guard-rail"
 							]
-						}
+						},
+						 {
+							"group": "Execution layers",
+							"pages": [
+							  "api-reference/users/execution-layers/get-execution-layers",
+							  "api-reference/users/execution-layers/post-create-execution-layer",
+							  "api-reference/users/execution-layers/get-execution-layer",
+							  "api-reference/users/execution-layers/delete-execution-layer",
+							  "api-reference/users/execution-layers/update-execution-layer"
+							]
+						  }
+
 					]
 				}
 			]
